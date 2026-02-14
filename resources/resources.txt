@@ -1,0 +1,14 @@
+@images
+icon.png	icon
+sheep.png	pc
+goal.png	goal
+straightwall.png	wall
+iscorner.png	isCorner
+oscorner.png	osCorner
+dirtfill.png	dirtBkgd
+border.png		border
+
+@fonts
+Monaco.ttf	debug
+
+@sounds
