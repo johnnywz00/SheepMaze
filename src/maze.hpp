@@ -11,10 +11,8 @@
 
 #include "jwzsfml.hpp"
 #include "resourcemanager.hpp"
+#include "timedeventmanager.hpp"
 
-
-class SFGameWindow;
-class TimedEventManager;
 
 using BitsetGrid = vector<vector<unsigned char>>;
 
@@ -34,4 +32,5 @@ struct Maze
 	vecI			goalCell;
 	vecF			cornerOffset;
 };
+
 #endif /* maze_hpp */

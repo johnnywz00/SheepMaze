@@ -1,13 +1,16 @@
-#ifndef SHEEPMAZE_HPP
-#define SHEEPMAZE_HPP
-
-
 /*
  - panning
  
  */
 
+#ifndef SHEEPMAZE_HPP
+#define SHEEPMAZE_HPP
+
 #include "maze.hpp"
+
+
+class FullscreenOnlyApp;
+class TimedEventManager;
 
 class State {
 public:
