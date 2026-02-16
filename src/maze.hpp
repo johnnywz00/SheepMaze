@@ -12,7 +12,6 @@
 #include "jwzsfml.hpp"
 #include "resourcemanager.hpp"
 #include "timedeventmanager.hpp"
-#include "zsprite.hpp"
 
 
 using BitsetGrid = vector<vector<unsigned char>>;
@@ -32,7 +31,6 @@ struct Maze
 	int				cellSize;
 	vecI			startCell;
 	vecI			goalCell;
-	vecF			cornerOffset;
 };
 
 #endif /* maze_hpp */

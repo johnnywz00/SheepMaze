@@ -439,7 +439,6 @@ void State::assembleMazeSprite (Maze& curMaze)
 	uint xsize = curMaze.cellSize * (uint)curMaze.grid[0].size();
 	uint ysize = curMaze.cellSize * (uint)curMaze.grid.size();
 	curMaze.spriteSize = toVecF(vecU(xsize, ysize));
-	curMaze.cornerOffset = {float((scrw - xsize) / 2), float((scrh - ysize) / 2)};
 	
 	rtSprVec.clear();
 	rtSprVec.shrink_to_fit();
@@ -473,7 +472,6 @@ void State::assembleMazeSprite2 (Maze& curMaze)
 	uint xsize = curMaze.cellSize * (uint)curMaze.grid[0].size();
 	uint ysize = curMaze.cellSize * (uint)curMaze.grid.size();
 	curMaze.spriteSize = toVecF(vecU(xsize, ysize));
-	curMaze.cornerOffset = {float((scrw - xsize) / 2), float((scrh - ysize) / 2)};
 	
 	rt.create(xsize, ysize);
 	rt.clear(Color::Transparent);

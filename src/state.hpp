@@ -56,12 +56,12 @@ public:
 	;
 
 private:
-	static inline const string		instrucsStr =
+	const string			instrucsStr =
 		"Y: Create new maze!   A/Shift + A: Adjust maze width   Z/Shift + Z:"
 		" Adjust maze height          John Ziegler, 2026   johnnywz00@yahoo.com"
 	;
-	static inline const string				dirStr  = "neswnes";
-	static inline const map<char, vecI> 	dirCoords {
+	const string			dirStr  = "neswnes";
+	const map<char, vecI> 	dirCoords {
 		{'n', {0, -1}}
 		, {'e', {1, 0}}
 		, {'s', {0, 1}}
