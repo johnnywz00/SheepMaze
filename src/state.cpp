@@ -7,19 +7,61 @@
 State* State::instance_ = nullptr;
 
 
+void State::onCreate ()
+{
+	instance_ = this;
+	app->setRedrawColor(GRASSGREEN);
+	rwin->setMouseCursorVisible(false);
+	
+	instrucsTxt = Text(instrucsStr, gFont("mazeSize"), 18);
+	instrucsTxt.setFillColor(DKAZURE);
+	
+	sizeTxt = Text("", gFont("mazeSize"), 24);
+	sizeTxt.setFillColor(DKAZURE);
+
+	tbox = Textbox(gFont("debug"), {1500, 25});
+	
+	gSound("move").setVolume(5.f);
+	gSound("hitWall").setVolume(15.f);
+
+	gridSize = {14, 8};
+
+#if 0
+	/* If using the dirtfill, lighten the color first */
+	ZImage zim {gTexture("dirtBkgd").copyToImage()};
+	zim.prportLighten(50);
+	gTexture("dirtBkgd").loadFromImage(zim);
+	bkgdSpr.setTexture(gTexture("dirtBkgd"));
+#endif
+	bkgdSpr.setTexture(gTexture("bkgd"));
+		
+	pcSpr.setTexture(gTexture("pc"));
+	centerOrigin(pcSpr);
+	
+	goalSpr.setTexture(gTexture("goal"));
+	centerOrigin(goalSpr);
+
+	adjustResourceColors();
+	
+	createCellTxs();
+	
+	reset();
+}
+
+/* Currently unused */
 bool State::handleTextEvent (Event& event)
 {
 	if (activeTbox
-			&& (event.type == Event::TextEntered
-				|| event.type == Event::KeyPressed
-				|| event.type == Event::KeyReleased)) {
+		&& (event.type == Event::TextEntered
+			|| event.type == Event::KeyPressed
+			|| event.type == Event::KeyReleased)) {
 		if (event.type == Event::TextEntered) {
 			if (event.text.unicode == 8)
 				if (iKP(LShift))
 					activeTbox->clear();
 				else activeTbox->deleteLastChar();
-			else if (event.text.unicode == 9) ; // Don't write the \t
-			else activeTbox->appendText(event.text.unicode);
+				else if (event.text.unicode == 9) ; // Don't write the \t
+				else activeTbox->appendText(event.text.unicode);
 		}
 		if (event.type == Event::KeyPressed && (event.key.code == Keyboard::Escape || event.key.code == Keyboard::Enter)) {
 			activeTbox->setActive(false);
@@ -30,89 +72,238 @@ bool State::handleTextEvent (Event& event)
 	return false;
 }
 
-void State::onCreate ()
+void State::onMouseDown (int x, int y)
 {
-	instance_ = this;
-	app->setRedrawColor(GRASSGREEN);
-	rwin->setMouseCursorVisible(false);
-	
-	instrucsTxt = Text(instrucsStr, gFont("mazeSize"), 18);
-	instrucsTxt.setFillColor(DKAZURE);
-//	instrucsTxt.setOutlineThickness(1);
-//	instrucsTxt.setOutlineColor(Color(255, 255, 255, 80));
-	
-	debugTxt = Text("", gFont("mazeSize"), 24);
-	debugTxt.setFillColor(DKAZURE);
-
-	tbox = Textbox(gFont("debug"), {1500, 25});
-	
-	gSound("move").setVolume(5.f);
-	gSound("hitWall").setVolume(15.f);
-
-	gridSize = {20, 12};
-
-	// If using the dirtfill, lighten the color first
-//	ZImage zim {gTexture("dirtBkgd").copyToImage()};
-//	zim.prportLighten(50);
-//	gTexture("dirtBkgd").loadFromImage(zim);
-//	bkgdSpr.setTexture(gTexture("dirtBkgd"));
-	bkgdSpr.setTexture(gTexture("bkgd"));
-//	centerOrigin(bkgdSpr);
-//	bkgdSpr.setPosition({scrcx, scrcy});
-		
-	pcSpr.setTexture(gTexture("pc"));
-	centerOrigin(pcSpr);
-	
-	goalSpr.setTexture(gTexture("goal"));
-	centerOrigin(goalSpr);
-	
-	uint hueVal = 45;
-	ZImage zim1 {gTexture("isCorner").copyToImage()};
-	int wid = zim1.getSize().x;
-	int ht = zim1.getSize().y;
-	for (int i = 0; i <  wid ; ++i) {
-		for (int j = 0; j <  ht ; ++j) {
-			Color p = zim1.getPixel(i, j);
-			if (p.a > 0)
-//				zim1.setPixel(i, j, addHue(p, hueVal));
-				zim1.setPixel(i, j, addBrightness(CHARCOAL, 15));
-		}
+	if (tbox.tbox.gGB().contains(x, y)) {
+		tbox.setActive(true);
+		activeTbox = &tbox;
+		return;
 	}
-	gTexture("isCorner").loadFromImage(zim1);
-	
-	zim1 = gTexture("osCorner").copyToImage();
-	wid = zim1.getSize().x;
-	ht = zim1.getSize().y;
-	for (int i = 0; i <  wid ; ++i) {
-		for (int j = 0; j <  ht ; ++j) {
-			Color p = zim1.getPixel(i, j);
-			if (p.a > 0)
-//				zim1.setPixel(i, j, addHue(p, hueVal));
-				zim1.setPixel(i, j, addBrightness(CHARCOAL, 10));
-		}
+	else if (tbox.isActive) {
+		tbox.setActive(false);
+		activeTbox = nullptr;
+		return;
 	}
-	gTexture("osCorner").loadFromImage(zim1);
-	
-	zim1 = gTexture("wall").copyToImage();
-	wid = zim1.getSize().x;
-	ht = zim1.getSize().y;
-	for (int i = 0; i <  wid ; ++i) {
-		for (int j = 0; j <  ht ; ++j) {
-			Color p = zim1.getPixel(i, j);
-			if (p.a > 0)
-//				zim1.setPixel(i, j, addHue(p, hueVal));
-				zim1.setPixel(i, j, addBrightness(CHARCOAL, 6));
-		}
-	}
-	gTexture("wall").loadFromImage(zim1);
-	
-	createCellTxs();
-	
-	reset();
 }
 
+void State::onKeyPress(Keyboard::Key k)
+{
+	switch(k) {
+			
+		case Keyboard::Escape:
+			app->close();
+			break;
+			
+		case Keyboard::Up:
+		case Keyboard::Down:
+		case Keyboard::Left:
+		case Keyboard::Right:
+			movePC(k);
+			break;
+			
+		case Keyboard::Y:
+			reset();
+			break;
+			
+		default:
+			break;
+	}
+}
+
+void State::update (const Time& time)
+{
+	timedMgr->fireReadyEvents(time);
+	
+	adjustVal(A, gridSize.x, 2, 2, 1000);
+	adjustVal(Z, gridSize.y, 2, 2, 1000);
+	
+	sizeTxt.setString(vecfStr(toVecF(gridSize)));
+} //end update
+
+void State::draw ()
+{
+	rwin->draw(bkgdSpr);
+	//	rwin->draw(tbox);
+		
+	forNum (curMaze.grid.size()) {
+		if (curMaze.goalCell.y == i)
+			rwin->draw(goalSpr);
+		if (pcLoc.y == i
+			&& pcSpr.getScale().x < 2)
+			rwin->draw(pcSpr);
+		rwin->draw(rtSprVec[i]);
+	}
+	if (pcSpr.getScale().x > 1.9)
+		rwin->draw(pcSpr);
+	
+#if 0 // using walls instead of fences
+	rwin->draw(rtSpr);
+	rwin->draw(pcSpr);
+	
+	// using plain lines instead of sprites
+	rwin->draw(va);
+#endif
+	
+	
+	rwin->draw(instrucsTxt);
+	rwin->draw(sizeTxt);
+}
+
+void State::reset ()
+{
+	activeTbox = nullptr;
+	
+	curMaze = generateNewMaze();
+	assembleMazeSprite(curMaze);
+	
+	goalSpr.setPosition(toVecF(cellCtrToPixels(curMaze.goalCell)));
+	float factor = curMaze.cellSize / (goalSpr.gLB().width + 10);
+	goalSpr.setScale(factor, factor);
+	
+#if 0 // using walls instead of fences
+	Sprite goalSpr_(gTexture("goal"));
+	centerOrigin(goalSpr_);
+	goalSpr_.setPosition(toVecF(cellCtrToPixels(curMaze.goalCell)));
+	float factor = curMaze.cellSize / (goalSpr_.gLB().width + 10);
+	goalSpr_.setScale(factor, factor);
+	rt.draw(goalSpr_);
+
+	rt.display();
+	rtSpr = Sprite(rt.getTexture());
+#endif
+	
+	/* To simplify all of the positioning and maze coordinates,
+	 * leave the maze oriented to 0, 0 and shift the window view
+	 * to center the maze, rather than tryng to move the maze
+	 * to the center.
+	 */
+	vw = View({curMaze.spriteSize / 2.f}, {scrw, scrh});
+	rwin->setView(vw);
+	
+	bkgdSpr.setColor(GRASSGREEN);
+	bkgdSpr.setScale({scrw/ bkgdSpr.gLB().width, scrh / bkgdSpr.gLB().height});
+	centerOrigin(bkgdSpr);
+	/* Background needs to follow the View */
+	bkgdSpr.setPosition(vw.getCenter());
+	
+	/* Text needs to be relative to View, not to maze */
+	sizeTxt.setPosition(vw.getCenter() - vw.getSize() / 2.f + vecF(8, 25));
+	instrucsTxt.setPosition(vw.getCenter() - vw.getSize() / 2.f + vecF(15, scrh - 30));
+	
+	pcLoc = curMaze.startCell;
+	pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
+	pcSpr.setScale(factor, factor);
+}
+
+Maze State::generateNewMaze ()
+{
+	/* The maza data will be represented as a 2D array of
+	 * unsigned chars, where the bits of each unsigned char stand for
+	 * the presence or absence of walls on the four sides of that
+	 * cell.
+	 */
+	Maze maze;
+	/* `gridSize` represents the number of traversable maze cells, but
+	 * here we add 2 to the values to make a border
+	 */
+	BitsetGrid grid = {(size_t)gridSize.y + 2, vector<unsigned char>(gridSize.x + 2, 15)};
+	
+	/* Set all border cells to "visited" so that we don't have to run special
+	 * logic in the algorithm to keep from wandering out of bounds
+	 */
+	for (size_t row = 1; row < grid.size() - 1; ++row) {
+		for (size_t col = 1; col < grid[row].size() - 1; ++col) {
+			grid[row][col] |= 16;
+		}
+	}
+	vecI curCell;
+	
+	/* For now, let starting point be a random corner and goal be
+	 * the opposite corner. We want the second tier "in" because
+	 * we essentially added a dummy outermost tier for bounding walls.
+	 */
+	vector<vecI> gridCorners {	// NW, NE, SE, SW
+		{1, 1}
+		, {gridSize.x, 1}
+		, {gridSize.x, gridSize.y}
+		, {1, gridSize.y}
+	};
+	auto idx = randRange(3);
+	maze.startCell = gridCorners[idx];
+	/* The expression here gets the opposite corner */
+	maze.goalCell = gridCorners[(idx + 2) % 4];
+	
+	
+	queue<vecI> que;
+	curCell = maze.startCell;
+	/* Mark this cell as visited */
+	grid[curCell.y][curCell.x] &= ~16;
+	que.push(curCell);
+	for (;;) {
+		vecI nextCell {-1, -1};
+		int curIdx = randRange(3);
+		forNum(4) {
+			vecI tempNext = curCell + dirCoords.at(dirStr[curIdx]);
+			/* We found an unresolved cell neighboring our current one */
+			if (grid[tempNext.y][tempNext.x] & 16) {
+				nextCell = tempNext;
+				break;
+			}
+			++curIdx;
+		}
+		/* Everything surrounding curCell is already resolved, so this
+		 * branch has reached a dead end and we need to go back to the
+		 * queue to see if there are any unresolved branches left to
+		 * pursue
+		 */
+		if (nextCell.x == -1) {
+			que.pop();
+			if (!que.empty())
+				curCell = que.front();
+			/* Reaching this statement means whole grid has been resolved */
+			else break;
+		}
+		/* We just moved to a new unresolved cell in the currently active branch */
+		else {
+			/* curCell and nextCell: each has to remove its wall that separates
+			 * it from the other
+			 */
+			grid[curCell.y][curCell.x] &= ~(1 << (curIdx % 4));
+			grid[nextCell.y][nextCell.x] &= ~(1 << ((curIdx + 2) % 4));
+			/* Mark latest cell as visited and add it to the queue */
+			curCell = nextCell;
+			grid[curCell.y][curCell.x] &= ~16;
+			que.push(curCell);
+		}
+	}
+	
+	maze.grid = grid;
+	/* Determine the pixel size of each cell of this maze, taking into
+	 * consideration leaving some open space around the screen edges.
+	 * Because we want to do proportional resizing, and because the user
+	 * can adjust the x and y sizes of the grid independently, we have to
+	 * use min() to know which value determines the cell size
+	 */
+	maze.cellSize = min(scrw / (gridSize.x + 4), scrh / (gridSize.y + 4));
+	return maze;
+}
+
+/* For fences/layering as opposed to bird's-eye solid walls */
 void State::createCellTxs ()
 {
+	/* There are sixteen possible combinations of wall-or-no-wall
+	 * for north, south, east, west. We'll draw a sprite for each,
+	 * so that a later routine can read the map data and pick one
+	 * of these sprites to draw at the position of that cell.
+	 
+	 * The positioning and coordinates used here are a little odd and
+	 * unintuitive, but it's an attempt (not necessarily the most elegant
+	 * one) to build the cell sprites in such a way that the finished
+	 * maze can be drawn by the window row by row (from top down), inserting
+	 * the PC sprite at the right juncture so that it appears to be behind
+	 * the fences lower than it, but in front of the fences higher than it
+	 */
+	
 	cellRt.create(48, 65);
 	cellRt.create(48, 65);
 	
@@ -150,6 +341,7 @@ void State::createCellTxs ()
 	}
 }
 
+/* For creating the maze sprite out of solid walls that won't overlap the PC */
 void State::createCellTxs2 ()
 {
 	cellRt.create(48, 48);
@@ -161,6 +353,9 @@ void State::createCellTxs2 ()
 		}
 		cellRt.clear(Color::Transparent);
 		
+		/* The large number of code statements here is the tradeoff for
+		 * less pixel drawing and stored resource files
+		 */
 		Sprite spr(gTexture("osCorner"));
 		cellRt.draw(spr);
 		spr.setPosition({0, 47});
@@ -236,220 +431,9 @@ void State::createCellTxs2 ()
 	}
 }
 
-void State::reset ()
-{
-	activeTbox = nullptr;
-	
-	curMaze = generateNewMaze();
-	assembleMazeSprite(curMaze);
-	
-	goalSpr.setPosition(toVecF(cellCtrToPixels(curMaze.goalCell)));
-	float factor = curMaze.cellSize / (goalSpr.gLB().width + 10);
-	goalSpr.setScale(factor, factor);
-	
-//	Sprite goalSpr_(gTexture("goal"));
-//	centerOrigin(goalSpr_);
-//	goalSpr_.setPosition(toVecF(cellCtrToPixels(curMaze.goalCell)));
-//	float factor = curMaze.cellSize / (goalSpr_.gLB().width + 10);
-//	goalSpr_.setScale(factor, factor);
-//	rt.draw(goalSpr_);
-	
-//	rt.display();
-//	rtSpr = Sprite(rt.getTexture());
-	
-	vw = View({curMaze.spriteSize / 2.f}, {scrw, scrh});
-	rwin->setView(vw);
-	
-	bkgdSpr.setColor(GRASSGREEN); //random
-	bkgdSpr.setScale({scrw/ bkgdSpr.gLB().width, scrh / bkgdSpr.gLB().height});
-	centerOrigin(bkgdSpr);
-	bkgdSpr.setPosition(vw.getCenter());
-	
-	debugTxt.setPosition(vw.getCenter() - vw.getSize() / 2.f + vecF(8, 25));
-	instrucsTxt.setPosition(vw.getCenter() - vw.getSize() / 2.f + vecF(15, scrh - 30));
-	
-	pcLoc = curMaze.startCell;
-	pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
-	pcSpr.setScale(factor, factor);
-}
-
-
-void State::draw ()
-{
-	rwin->draw(bkgdSpr);
-//	rwin->draw(tbox);
-	
-	
-	forNum (curMaze.grid.size()) {
-		if (curMaze.goalCell.y == i)
-			rwin->draw(goalSpr);
-		if (pcLoc.y == i
-			&& pcSpr.getScale().x < 2)
-			rwin->draw(pcSpr);
-		rwin->draw(rtSprVec[i]);
-	}
-	if (pcSpr.getScale().x > 1.9)
-		rwin->draw(pcSpr);
-	
-//	rwin->draw(rtSpr);
-//	rwin->draw(pcSpr);
-	
-	rwin->draw(instrucsTxt);
-	rwin->draw(debugTxt);
-}
-
-
-void State::onMouseDown (int x, int y)
-{
-	if (tbox.tbox.gGB().contains(x, y)) {
-		tbox.setActive(true);
-		activeTbox = &tbox;
-		return;
-	}
-	else if (tbox.isActive) {
-		tbox.setActive(false);
-		activeTbox = nullptr;
-		return;
-	}
-	
-	// if (xxx.contains(x, y))
-}
-
-void State::onKeyPress(Keyboard::Key k)
-{
-	switch(k) {
-			
-		case Keyboard::Escape:
-			app->close();
-			break;
-			
-		case Keyboard::Up:
-		case Keyboard::Down:
-		case Keyboard::Left:
-		case Keyboard::Right:
-			movePC(k);
-			break;
-			
-		case Keyboard::Y:
-			reset();
-			break;
-			
-		default:
-			break;
-	}
-}
-
-void State::update (const Time& time)
-{
-	timedMgr->fireReadyEvents(time);
-	
-	adjustVal(A, gridSize.x, 2, 2, 1000);
-	adjustVal(Z, gridSize.y, 2, 2, 1000);
-	
-	//sprite update
-
-	debugTxt.setString(vecfStr(toVecF(gridSize)));
-	
-} //end update
-
-Maze State::generateNewMaze ()
-{
-	Maze maze;
-	BitsetGrid grid = {(size_t)gridSize.y + 2, vector<unsigned char>(gridSize.x + 2, 15)};
-	
-	/* Set all border cells to "visited" so that we don't have to run special
-	 * logic to keep from wandering out of bounds
-	 */
-	for (size_t row = 1; row < grid.size() - 1; ++row) {
-		for (size_t col = 1; col < grid[row].size() - 1; ++col) {
-			grid[row][col] |= 16;
-		}
-	}
-	vecI curCell;
-	
-	/* For now, let starting point be a random corner and goal be
-	 * the opposite corner. We want the second tier "in" because
-	 * we essentially added a dummy outermost tier for bounding walls.
-	 */
-	vector<vecI> gridCorners {	// NW, NE, SE, SW
-		{1, 1}
-		, {gridSize.x, 1}
-		, {gridSize.x, gridSize.y}
-		, {1, gridSize.y}
-	};
-	auto idx = randRange(3);
-	maze.startCell = gridCorners[idx];
-	maze.goalCell = gridCorners[(idx + 2) % 4];
-	/*
-	 // QUEUE ONLY FOR getting the generating concept going: ultimately, use some sort of sorting step to start new branches from available remaining spots nearest the origin
-	 
-		priorityq/sort keeps track of cell's manhattan from origin, new branches always start from nearest option to origin, potentially creates longest wrong roads, most challenging?
-		try letting a branch go # cells then force rebranch, rather than letting it go to dead end before
-	 */
-	queue<vecI> que;
-	curCell = maze.startCell;
-	grid[curCell.y][curCell.x] &= ~16;
-	que.push(curCell);
-	for (;;) {
-		vecI nextCell {-1, -1};
-		int curIdx = randRange(3);
-		forNum(4) {
-			vecI tempNext = curCell + dirCoords.at(dirStr[curIdx]);
-			if (grid[tempNext.y][tempNext.x] & 16) {
-				nextCell = tempNext;
-				break;
-			}
-			++curIdx;
-		}
-		if (nextCell.x == -1) {
-			que.pop();
-			if (!que.empty())
-				curCell = que.front();
-			/* Reaching this statement means whole grid has been resolved */
-			else break;
-		}
-		else {
-			grid[curCell.y][curCell.x] &= ~(1 << (curIdx % 4));
-			grid[nextCell.y][nextCell.x] &= ~(1 << ((curIdx + 2) % 4));
-			curCell = nextCell;
-			/* Mark as visited */
-			grid[curCell.y][curCell.x] &= ~16;
-			que.push(curCell);
-		}
-	}
-
-	maze.grid = grid;
-	maze.cellSize = min(scrw / (gridSize.x + 4), scrh / (gridSize.y + 4));
-	return maze;
-}
-
-void State::loadVxArrFromMaze (Maze& curMaze)
-{
-	va.clear();
-	int& csz = curMaze.cellSize;
-	forNum (curMaze.grid.size()) {
-		forNumJ (curMaze.grid[i].size()) {
-			auto cur = curMaze.grid[i][j];
-			if (cur & 1) {
-				va.appendCoords(j * csz, i * csz);
-				va.appendCoords(j * csz + csz, i * csz);
-			}
-			if (cur & 2) {
-				va.appendCoords(j * csz + csz, i * csz);
-				va.appendCoords(j * csz + csz, i * csz + csz);
-			}
-			if (cur & 4) {
-				va.appendCoords(j * csz, i * csz + csz);
-				va.appendCoords(j * csz + csz, i * csz + csz);
-			}
-			if (cur & 8) {
-				va.appendCoords(j * csz, i * csz);
-				va.appendCoords(j * csz, i * csz + csz - 1);
-			}
-		}
-	}
-}
-
+/* For fences vs. solid walls: create sprites for each row of the
+ * maze rather than assembling a monolithic sprite
+ */
 void State::assembleMazeSprite (Maze& curMaze)
 {
 	uint xsize = curMaze.cellSize * (uint)curMaze.grid[0].size();
@@ -483,6 +467,7 @@ void State::assembleMazeSprite (Maze& curMaze)
 	}
 }
 
+/* Build a single sprite to draw per frame, when using solid walls */
 void State::assembleMazeSprite2 (Maze& curMaze)
 {
 	uint xsize = curMaze.cellSize * (uint)curMaze.grid[0].size();
@@ -507,6 +492,44 @@ void State::assembleMazeSprite2 (Maze& curMaze)
 	rt.display();
 }
 
+/* Draw the maze data using plain lines */
+void State::loadVxArrFromMaze (Maze& curMaze)
+{
+	va.clear();
+	int& csz = curMaze.cellSize;
+	forNum (curMaze.grid.size()) {
+		forNumJ (curMaze.grid[i].size()) {
+			auto cur = curMaze.grid[i][j];
+			if (cur & 1) {
+				va.appendCoords(j * csz, i * csz);
+				va.appendCoords(j * csz + csz, i * csz);
+			}
+			if (cur & 2) {
+				va.appendCoords(j * csz + csz, i * csz);
+				va.appendCoords(j * csz + csz, i * csz + csz);
+			}
+			if (cur & 4) {
+				va.appendCoords(j * csz, i * csz + csz);
+				va.appendCoords(j * csz + csz, i * csz + csz);
+			}
+			if (cur & 8) {
+				va.appendCoords(j * csz, i * csz);
+				va.appendCoords(j * csz, i * csz + csz - 1);
+			}
+		}
+	}
+}
+
+u_char State::getCell (const vecI& vec)
+{
+	return curMaze.grid[vec.y][vec.x];
+}
+
+vecI State::cellCtrToPixels (const vecI& cell)
+{
+	return {cell.x * curMaze.cellSize + curMaze.cellSize / 2,
+		cell.y * curMaze.cellSize + curMaze.cellSize / 2};
+}
 
 void State::movePC (Keyboard::Key k)
 {
@@ -537,22 +560,27 @@ void State::movePC (Keyboard::Key k)
 		bitNum = 2;
 	}
 	
+	/* Make PC face the direction it's heading */
+	auto curScale = pcSpr.getScale();
 	if (coordKey == 'w')
-		pcSpr.setScale(1, 1);
+		pcSpr.setScale(abs(curScale.x), curScale.y);
 	else if (coordKey == 'e')
-		pcSpr.setScale(-1, 1);
-	
+		pcSpr.setScale(abs(curScale.x) * -1, curScale.y);
+
+	/* There's no wall in the attempted direction, so
+	 * carry out a move
+	 */
 	if ( (getCell(pcLoc) & (1 << bitNum)) == 0) {
 		pcLoc += dirCoords.at(coordKey);
-		
 		pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
+		// DO ANIMATED MOVE instead of immediate position set
 		if (pcLoc == curMaze.goalCell)
 			winGame();
 		else
 			gSound("move").play();
 	}
+	/* Can't go that way */
 	else {
-		/* Can't go that way */
 		gSound("hitWall").play();
 		//anim?
 	}
@@ -564,26 +592,51 @@ void State::winGame ()
 	gSound("win").play();
 	//show path if not already drawn
 	//anim
+	/* Move on to a new maze of increased difficulty */
 	gridSize += {2, 2};
 	timedMgr->addEvent(3, [&](){ reset(); });
 }
 
-u_char State::getCell (const vecI& vec)
+void State::adjustResourceColors ()
 {
-	return curMaze.grid[vec.y][vec.x];
+	uint hueVal = 45;
+	Color newCol = CAPPUCCINO;
+	ZImage zim1 {gTexture("isCorner").copyToImage()};
+	int wid = zim1.getSize().x;
+	int ht = zim1.getSize().y;
+	for (int i = 0; i <  wid ; ++i) {
+		for (int j = 0; j <  ht ; ++j) {
+			Color p = zim1.getPixel(i, j);
+			if (p.a > 0)
+				//				zim1.setPixel(i, j, addHue(p, hueVal));
+				zim1.setPixel(i, j, addBrightness(newCol, 8));
+		}
+	}
+	gTexture("isCorner").loadFromImage(zim1);
+	
+	zim1 = gTexture("osCorner").copyToImage();
+	wid = zim1.getSize().x;
+	ht = zim1.getSize().y;
+	for (int i = 0; i <  wid ; ++i) {
+		for (int j = 0; j <  ht ; ++j) {
+			Color p = zim1.getPixel(i, j);
+			if (p.a > 0)
+				//				zim1.setPixel(i, j, addHue(p, hueVal));
+				zim1.setPixel(i, j, addBrightness(newCol, 7));
+		}
+	}
+	gTexture("osCorner").loadFromImage(zim1);
+	
+	zim1 = gTexture("wall").copyToImage();
+	wid = zim1.getSize().x;
+	ht = zim1.getSize().y;
+	for (int i = 0; i <  wid ; ++i) {
+		for (int j = 0; j <  ht ; ++j) {
+			Color p = zim1.getPixel(i, j);
+			if (p.a > 0)
+				//				zim1.setPixel(i, j, addHue(p, hueVal));
+				zim1.setPixel(i, j, addBrightness(newCol, 6));
+		}
+	}
+	gTexture("wall").loadFromImage(zim1);
 }
-
-vecI State::cellCtrToPixels (const vecI& cell)
-{
-	return {cell.x * curMaze.cellSize + curMaze.cellSize / 2,
-		cell.y * curMaze.cellSize + curMaze.cellSize / 2};
-}
-
-const string State::dirStr {"neswnes"};
-
-const map<char, vecI> State::dirCoords {
-	{'n', {0, -1}}
-	, {'e', {1, 0}}
-	, {'s', {0, 1}}
-	, {'w', {-1, 0}}
-};

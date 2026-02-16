@@ -14,13 +14,14 @@
 #include "timedeventmanager.hpp"
 #include "zsprite.hpp"
 
+
 using BitsetGrid = vector<vector<unsigned char>>;
 
 /*
  Bits of unsigned char stand for:
  
 							16			8			4			2			1
- UNUSED	UNUSED	UNUSED	unresolved	westwall	southwall	eastwall	northwall
+ UNUSED	UNUSED UNUSED	unresolved	westwall	southwall	eastwall	northwall
  */
 
 struct Maze
