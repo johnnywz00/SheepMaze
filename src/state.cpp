@@ -518,7 +518,7 @@ void State::loadVxArrFromMaze (Maze& curMaze)
 	}
 }
 
-u_char State::getCell (const vecI& vec)
+unsigned char State::getCell (const vecI& vec)
 {
 	return curMaze.grid[vec.y][vec.x];
 }

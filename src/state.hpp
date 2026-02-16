@@ -82,7 +82,7 @@ private:
 	
 	void loadVxArrFromMaze (Maze&);
 	
-	u_char getCell (const vecI&);
+	unsigned char getCell (const vecI&);
 	
 	vecI cellCtrToPixels (const vecI&);
 	
