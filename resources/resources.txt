@@ -19,3 +19,6 @@ Monaco.ttf	debug
 PilsenPlakat.otf	mazeSize
 
 @sounds
+move.wav		move
+woodThunk.wav	hitWall
+tada.mp3		win

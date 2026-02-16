@@ -34,15 +34,20 @@ void State::onCreate ()
 {
 	instance_ = this;
 	app->setRedrawColor(GRASSGREEN);
+	rwin->setMouseCursorVisible(false);
 	
-	mouseTxt = Text("", gFont("debug"), 13);
-	mouseTxt.sP(8, 9);
-	mouseTxt.setFillColor(PURPLE);
+	instrucsTxt = Text(instrucsStr, gFont("mazeSize"), 18);
+	instrucsTxt.setFillColor(DKAZURE);
+//	instrucsTxt.setOutlineThickness(1);
+//	instrucsTxt.setOutlineColor(Color(255, 255, 255, 80));
 	
 	debugTxt = Text("", gFont("mazeSize"), 24);
 	debugTxt.setFillColor(DKAZURE);
 
 	tbox = Textbox(gFont("debug"), {1500, 25});
+	
+	gSound("move").setVolume(5.f);
+	gSound("hitWall").setVolume(15.f);
 
 	gridSize = {20, 12};
 
@@ -261,6 +266,7 @@ void State::reset ()
 	bkgdSpr.setPosition(vw.getCenter());
 	
 	debugTxt.setPosition(vw.getCenter() - vw.getSize() / 2.f + vecF(8, 25));
+	instrucsTxt.setPosition(vw.getCenter() - vw.getSize() / 2.f + vecF(15, scrh - 30));
 	
 	pcLoc = curMaze.startCell;
 	pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
@@ -277,15 +283,18 @@ void State::draw ()
 	forNum (curMaze.grid.size()) {
 		if (curMaze.goalCell.y == i)
 			rwin->draw(goalSpr);
-		if (pcLoc.y == i)
+		if (pcLoc.y == i
+			&& pcSpr.getScale().x < 2)
 			rwin->draw(pcSpr);
 		rwin->draw(rtSprVec[i]);
 	}
+	if (pcSpr.getScale().x > 1.9)
+		rwin->draw(pcSpr);
 	
 //	rwin->draw(rtSpr);
 //	rwin->draw(pcSpr);
 	
-//	rwin->draw(mouseTxt);
+	rwin->draw(instrucsTxt);
 	rwin->draw(debugTxt);
 }
 
@@ -339,8 +348,6 @@ void State::update (const Time& time)
 	
 	//sprite update
 
-	// DEBUG/TESTING
-	mouseTxt.setString(tS(mouseVec.x) + ", " + tS(mouseVec.y));
 	debugTxt.setString(vecfStr(toVecF(gridSize)));
 	
 } //end update
@@ -530,15 +537,23 @@ void State::movePC (Keyboard::Key k)
 		bitNum = 2;
 	}
 	
+	if (coordKey == 'w')
+		pcSpr.setScale(1, 1);
+	else if (coordKey == 'e')
+		pcSpr.setScale(-1, 1);
+	
 	if ( (getCell(pcLoc) & (1 << bitNum)) == 0) {
 		pcLoc += dirCoords.at(coordKey);
+		
 		pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
 		if (pcLoc == curMaze.goalCell)
 			winGame();
+		else
+			gSound("move").play();
 	}
 	else {
 		/* Can't go that way */
-		//failed move sound
+		gSound("hitWall").play();
 		//anim?
 	}
 }
@@ -546,9 +561,11 @@ void State::movePC (Keyboard::Key k)
 void State::winGame ()
 {
 	pcSpr.setScale(2,2);
+	gSound("win").play();
 	//show path if not already drawn
-	//sound, anim
-	//delay till generate new?
+	//anim
+	gridSize += {2, 2};
+	timedMgr->addEvent(3, [&](){ reset(); });
 }
 
 u_char State::getCell (const vecI& vec)

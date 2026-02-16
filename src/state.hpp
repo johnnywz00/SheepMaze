@@ -1,6 +1,6 @@
 /*
- - instrucs (menu?)
- - sounds
+ - switch between fence and wall drawing
+ - sheep sprites for going n/s
  - Fuses for smooth motion
  - friction sprite motion as optional gameplay?
  - panning for larger mazes
@@ -8,6 +8,8 @@
  - highlight solution path
  - grass blades on background
  - get key (trampoline? somewhere in maze, bring it to goal (keyhole door, low wall to trampoline over...)
+ 
+ - mazes where no path leads from start to goal, have to find where to place trampoline and get one jump over a fence
  */
 
 #ifndef SHEEPMAZE_HPP
@@ -76,6 +78,10 @@ public:
 	
 	Maze							curMaze;
 	vecI 							gridSize;
+	static inline const string		instrucsStr =
+		"Y: Create new maze!   A/Shift + A: Adjust maze width   Z/Shift + Z:"
+		" Adjust maze height          John Ziegler, 2026   johnnywz00@yahoo.com"
+	;
 	static const string				dirStr;
 	static const map<char, vecI> 	dirCoords;
 	
@@ -98,7 +104,7 @@ public:
 	
 	
 
-	Text    			 mouseTxt,
+	Text    			 instrucsTxt,
 						 debugTxt;
 }; //end class State
 

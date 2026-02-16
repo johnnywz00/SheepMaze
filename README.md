@@ -7,6 +7,7 @@
 ### ABOUT THE PROJECT
 
 ## COMING SOON
+Mention the unnecessary elaboration of python version
 
 ### FILE DESCRIPTIONS
 * **sfmlApp:**  Implements `main()` and the abstract app
