@@ -34,7 +34,9 @@ void State::onCreate ()
 	bkgdSpr.setTexture(gTexture("dirtBkgd"));
 #endif
 	bkgdSpr.setTexture(gTexture("bkgd"));
-		
+	bkgdSpr.setColor(CHARCOAL);
+//	bkgdSpr.setColor(GRASSGREEN);
+
 	pcSpr.setTexture(gTexture("pc"));
 	centerOrigin(pcSpr);
 	
@@ -43,7 +45,7 @@ void State::onCreate ()
 
 	adjustResourceColors();
 	
-	createCellTxs();
+	createCellTxs2();
 	
 	reset();
 }
@@ -131,15 +133,15 @@ void State::draw ()
 		if (pcLoc.y == i
 			&& pcSpr.getScale().x < 2)
 			rwin->draw(pcSpr);
-		rwin->draw(rtSprVec[i]);
+//		rwin->draw(rtSprVec[i]);
 	}
 	if (pcSpr.getScale().x > 1.9)
 		rwin->draw(pcSpr);
 	
-#if 0 // using walls instead of fences
 	rwin->draw(rtSpr);
 	rwin->draw(pcSpr);
 	
+#if 0 // using walls instead of fences
 	// using plain lines instead of sprites
 	rwin->draw(va);
 #endif
@@ -154,22 +156,21 @@ void State::reset ()
 	activeTbox = nullptr;
 	
 	curMaze = generateNewMaze();
-	assembleMazeSprite(curMaze);
+	assembleMazeSprite2(curMaze);
 	
 	goalSpr.setPosition(toVecF(cellCtrToPixels(curMaze.goalCell)));
 	float factor = curMaze.cellSize / (goalSpr.gLB().width + 10);
 	goalSpr.setScale(factor, factor);
 	
-#if 0 // using walls instead of fences
 	Sprite goalSpr_(gTexture("goal"));
 	centerOrigin(goalSpr_);
 	goalSpr_.setPosition(toVecF(cellCtrToPixels(curMaze.goalCell)));
-	float factor = curMaze.cellSize / (goalSpr_.gLB().width + 10);
 	goalSpr_.setScale(factor, factor);
 	rt.draw(goalSpr_);
 
 	rt.display();
 	rtSpr = Sprite(rt.getTexture());
+#if 0 // using walls instead of fences
 #endif
 	
 	/* To simplify all of the positioning and maze coordinates,
@@ -180,7 +181,6 @@ void State::reset ()
 	vw = View({curMaze.spriteSize / 2.f}, {scrw, scrh});
 	rwin->setView(vw);
 	
-	bkgdSpr.setColor(GRASSGREEN);
 	bkgdSpr.setScale({scrw/ bkgdSpr.gLB().width, scrh / bkgdSpr.gLB().height});
 	centerOrigin(bkgdSpr);
 	/* Background needs to follow the View */
