@@ -3,6 +3,7 @@
 ## C++/SFML sprite-based maze game
 
 <img width="1728" height="1117" alt="Screenshot 2026-02-16 at 2 11 52 PM" src="https://github.com/user-attachments/assets/d843d7b6-dc51-4343-a450-aabd88211876" />
+<img width="1728" height="1117" alt="Screenshot 2026-02-16 at 3 12 13 PM" src="https://github.com/user-attachments/assets/bfc9343d-34ee-4144-9663-567bc2ddb7d6" />
 
 ### ABOUT THE PROJECT
 Early in my software engineering self-teaching journey, figuring out a maze generator was one of the challenges that made its way into my head and wouldn't leave till I'd take it on. As with most of my projects, the resulting product was eventually extended or modified to have some sort of usefulness or appeal to my small children, in this case making a controllable character to traverse the maze.
