@@ -6,7 +6,7 @@
 <img width="1728" height="1117" alt="Screenshot 2026-02-16 at 3 12 13 PM" src="https://github.com/user-attachments/assets/bfc9343d-34ee-4144-9663-567bc2ddb7d6" />
 
 ### ABOUT THE PROJECT
-Early in my software engineering self-teaching journey, figuring out a maze generator was one of the challenges that made its way into my head and wouldn't leave till I'd take it on. As with most of my projects, the resulting product was eventually extended or modified to have some sort of usefulness or appeal to my small children, in this case making a controllable character to traverse the maze.
+Early in my software engineering self-teaching journey, figuring out a maze generator was one of the challenges that made its way into my head and wouldn't leave till I'd taken it on. As with most of my projects, the resulting product was eventually extended or modified to have some sort of usefulness or appeal to my small children, in this case making a controllable character to traverse the maze.
 
 The projects of this period (ca. 2020) were motivated primarily by the desire to know if I could "solve" the challenge of bringing this or that mechanic or concept into being through programming language, largely without consulting any other sources to see how it was done (this was also pre-AI era). The projects were characterized by a lack of concern for code organization, best practices, readability, or maintainability, because my free time was very limited and my chief objective was getting the satisfaction of knowing I got the idea to work. Most of the time, when I achieved that much of the goal, I was ready to move on to the next logical challenge rather than pore over the details of making a well-rounded product fit for public consumption. 
 
