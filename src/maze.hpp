@@ -12,7 +12,7 @@
 #include "jwzsfml.hpp"
 #include "resourcemanager.hpp"
 #include "timedeventmanager.hpp"
-
+#include "zsprite.hpp"
 
 using BitsetGrid = vector<vector<unsigned char>>;
 
@@ -27,6 +27,7 @@ struct Maze
 {	
 	BitsetGrid		grid;
 	vecI			gridSize;
+	vecF			spriteSize;
 	int				cellSize;
 	vecI			startCell;
 	vecI			goalCell;

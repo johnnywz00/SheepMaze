@@ -6,9 +6,16 @@ straightwall.png	wall
 iscorner.png	isCorner
 oscorner.png	osCorner
 dirtfill.png	dirtBkgd
+marblefill.png	bkgd
 border.png		border
+lpost.png		lpost
+rpost.png		rpost
+lfence.png		lfence
+rfence.png		rfence
+fence.png		fence
 
 @fonts
 Monaco.ttf	debug
+PilsenPlakat.otf	mazeSize
 
 @sounds

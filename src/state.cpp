@@ -7,18 +7,6 @@
 State* State::instance_ = nullptr;
 
 
-
-void State::debugTxtSetup ()
-{
-	mouseTxt = Text("", Resources::getFont("debug"), 13);
-	mouseTxt.sP(8, 9);
-	mouseTxt.setFillColor(PURPLE);
-		
-	debugTxt = Text("", Resources::getFont("debug"), 13);
-	debugTxt.sP(8, 25);
-	debugTxt.setFillColor(Color::Blue);
-}
-
 bool State::handleTextEvent (Event& event)
 {
 	if (activeTbox
@@ -45,60 +33,73 @@ bool State::handleTextEvent (Event& event)
 void State::onCreate ()
 {
 	instance_ = this;
+	app->setRedrawColor(GRASSGREEN);
 	
-	debugTxtSetup();
-
-	tbox = Textbox(Resources::getFont("debug"), {1500, 25});
-
-	gridSize = {30, 20};
+	mouseTxt = Text("", gFont("debug"), 13);
+	mouseTxt.sP(8, 9);
+	mouseTxt.setFillColor(PURPLE);
 	
-	ZImage zim {Resources::getTex("dirtBkgd").copyToImage()};
-	zim.prportLighten(50);
-	Resources::getTex("dirtBkgd").loadFromImage(zim);
-	bkgdSpr.setTexture(Resources::getTex("dirtBkgd"));
-	bkgdSpr.setScale({scrw / bkgdSpr.gLB().width, scrh / bkgdSpr.gLB().height});
-	centerOrigin(bkgdSpr);
-	bkgdSpr.setPosition({scrcx, scrcy});
+	debugTxt = Text("", gFont("mazeSize"), 24);
+	debugTxt.setFillColor(DKAZURE);
+
+	tbox = Textbox(gFont("debug"), {1500, 25});
+
+	gridSize = {20, 12};
+
+	// If using the dirtfill, lighten the color first
+//	ZImage zim {gTexture("dirtBkgd").copyToImage()};
+//	zim.prportLighten(50);
+//	gTexture("dirtBkgd").loadFromImage(zim);
+//	bkgdSpr.setTexture(gTexture("dirtBkgd"));
+	bkgdSpr.setTexture(gTexture("bkgd"));
+//	centerOrigin(bkgdSpr);
+//	bkgdSpr.setPosition({scrcx, scrcy});
 		
-	pcSpr.setTexture(Resources::getTex("pc"));
+	pcSpr.setTexture(gTexture("pc"));
 	centerOrigin(pcSpr);
 	
+	goalSpr.setTexture(gTexture("goal"));
+	centerOrigin(goalSpr);
+	
 	uint hueVal = 45;
-	ZImage zim1 {Resources::getTex("isCorner").copyToImage()};
+	ZImage zim1 {gTexture("isCorner").copyToImage()};
 	int wid = zim1.getSize().x;
 	int ht = zim1.getSize().y;
 	for (int i = 0; i <  wid ; ++i) {
 		for (int j = 0; j <  ht ; ++j) {
 			Color p = zim1.getPixel(i, j);
 			if (p.a > 0)
-				zim1.setPixel(i, j, addHue(p, hueVal));
+//				zim1.setPixel(i, j, addHue(p, hueVal));
+				zim1.setPixel(i, j, addBrightness(CHARCOAL, 15));
 		}
 	}
-	Resources::getTex("isCorner").loadFromImage(zim1);
+	gTexture("isCorner").loadFromImage(zim1);
 	
-	zim1 = Resources::getTex("osCorner").copyToImage();
+	zim1 = gTexture("osCorner").copyToImage();
 	wid = zim1.getSize().x;
 	ht = zim1.getSize().y;
 	for (int i = 0; i <  wid ; ++i) {
 		for (int j = 0; j <  ht ; ++j) {
 			Color p = zim1.getPixel(i, j);
 			if (p.a > 0)
-				zim1.setPixel(i, j, addHue(p, hueVal));
+//				zim1.setPixel(i, j, addHue(p, hueVal));
+				zim1.setPixel(i, j, addBrightness(CHARCOAL, 10));
 		}
 	}
-	Resources::getTex("osCorner").loadFromImage(zim1);
+	gTexture("osCorner").loadFromImage(zim1);
 	
-	zim1 = Resources::getTex("wall").copyToImage();
+	zim1 = gTexture("wall").copyToImage();
 	wid = zim1.getSize().x;
 	ht = zim1.getSize().y;
 	for (int i = 0; i <  wid ; ++i) {
 		for (int j = 0; j <  ht ; ++j) {
 			Color p = zim1.getPixel(i, j);
 			if (p.a > 0)
-				zim1.setPixel(i, j, addHue(p, hueVal));
+//				zim1.setPixel(i, j, addHue(p, hueVal));
+				zim1.setPixel(i, j, addBrightness(CHARCOAL, 6));
 		}
 	}
-	Resources::getTex("wall").loadFromImage(zim1);
+	gTexture("wall").loadFromImage(zim1);
 	
 	createCellTxs();
 	
@@ -107,16 +108,55 @@ void State::onCreate ()
 
 void State::createCellTxs ()
 {
-	cellRt.create(48, 48);
+	cellRt.create(48, 65);
+	cellRt.create(48, 65);
 	
 	forNum(16) {
 		if (i == 15) {
-			cellTxs[i] = Resources::getTex("border");
+			cellTxs[i] = gTexture("border");
 			continue;
 		}
 		cellRt.clear(Color::Transparent);
 		
-		Sprite spr(Resources::getTex("osCorner"));
+		Sprite spr1(gTexture("lpost"));
+		spr1.setOrigin(0, spr1.gLB().height - 1);
+		spr1.setPosition({0, 64});
+		Sprite spr2(gTexture("rpost"));
+		spr2.setOrigin(spr2.gLB().width - 1, spr2.gLB().height - 1);
+		spr2.setPosition({47, 64});
+		Sprite spr3(gTexture("lfence"));
+		Sprite spr4(gTexture("rfence"));
+		spr4.setOrigin(spr4.gLB().width - 1, 0);
+		spr4.setPosition(47, 0);
+		Sprite spr5(gTexture("fence"));
+		spr5.setPosition(3, 44);
+		
+		cellRt.draw(spr1);
+		cellRt.draw(spr2);
+		if (i & 4)
+			cellRt.draw(spr5);
+		if (i & 2)
+			cellRt.draw(spr4);
+		if (i & 8)
+			cellRt.draw(spr3);
+		
+		cellRt.display();
+		cellTxs[i] = cellRt.getTexture();
+	}
+}
+
+void State::createCellTxs2 ()
+{
+	cellRt.create(48, 48);
+	
+	forNum(16) {
+		if (i == 15) {
+			cellTxs[i] = gTexture("border");
+			continue;
+		}
+		cellRt.clear(Color::Transparent);
+		
+		Sprite spr(gTexture("osCorner"));
 		cellRt.draw(spr);
 		spr.setPosition({0, 47});
 		spr.setScale({1, -1});
@@ -128,7 +168,7 @@ void State::createCellTxs ()
 		spr.setScale({-1, 1});
 		cellRt.draw(spr);
 		
-		Sprite spr2(Resources::getTex("wall"));
+		Sprite spr2(gTexture("wall"));
 		if (i & 1) {
 			spr2.setPosition({0, 0});
 			spr2.setRotation(270);
@@ -166,7 +206,7 @@ void State::createCellTxs ()
 			cellRt.draw(spr2);
 		}
 		
-		Sprite spr3(Resources::getTex("isCorner"));
+		Sprite spr3(gTexture("isCorner"));
 		if (i & 1 && i & 8) {
 			cellRt.draw(spr3);
 		}
@@ -196,39 +236,57 @@ void State::reset ()
 	activeTbox = nullptr;
 	
 	curMaze = generateNewMaze();
-	
-	rt.clear(Color::Transparent);
-//	rt.draw(va);
 	assembleMazeSprite(curMaze);
 	
-	Sprite goalSpr(Resources::getTex("goal"));
-	centerOrigin(goalSpr);
 	goalSpr.setPosition(toVecF(cellCtrToPixels(curMaze.goalCell)));
-	float factor = curMaze.cellSize / (goalSpr.gLB().width + 5);
+	float factor = curMaze.cellSize / (goalSpr.gLB().width + 10);
 	goalSpr.setScale(factor, factor);
-	rt.draw(goalSpr);
 	
-	rt.display();
-	rtSpr.setTexture(rt.getTexture());
-	centerOrigin(rtSpr);
-	rtSpr.setPosition({scrcx, scrcy});
+//	Sprite goalSpr_(gTexture("goal"));
+//	centerOrigin(goalSpr_);
+//	goalSpr_.setPosition(toVecF(cellCtrToPixels(curMaze.goalCell)));
+//	float factor = curMaze.cellSize / (goalSpr_.gLB().width + 10);
+//	goalSpr_.setScale(factor, factor);
+//	rt.draw(goalSpr_);
+	
+//	rt.display();
+//	rtSpr = Sprite(rt.getTexture());
+	
+	vw = View({curMaze.spriteSize / 2.f}, {scrw, scrh});
+	rwin->setView(vw);
+	
+	bkgdSpr.setColor(GRASSGREEN); //random
+	bkgdSpr.setScale({scrw/ bkgdSpr.gLB().width, scrh / bkgdSpr.gLB().height});
+	centerOrigin(bkgdSpr);
+	bkgdSpr.setPosition(vw.getCenter());
+	
+	debugTxt.setPosition(vw.getCenter() - vw.getSize() / 2.f + vecF(8, 25));
 	
 	pcLoc = curMaze.startCell;
 	pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
-	
+	pcSpr.setScale(factor, factor);
 }
 
 
 void State::draw ()
 {
-	w->draw(bkgdSpr);
-//	w->draw(tbox);
+	rwin->draw(bkgdSpr);
+//	rwin->draw(tbox);
 	
-	w->draw(rtSpr);
-	w->draw(pcSpr);
 	
-//	w->draw(mouseTxt);
-	w->draw(debugTxt);
+	forNum (curMaze.grid.size()) {
+		if (curMaze.goalCell.y == i)
+			rwin->draw(goalSpr);
+		if (pcLoc.y == i)
+			rwin->draw(pcSpr);
+		rwin->draw(rtSprVec[i]);
+	}
+	
+//	rwin->draw(rtSpr);
+//	rwin->draw(pcSpr);
+	
+//	rwin->draw(mouseTxt);
+	rwin->draw(debugTxt);
 }
 
 
@@ -248,19 +306,12 @@ void State::onMouseDown (int x, int y)
 	// if (xxx.contains(x, y))
 }
 
-
-void State::onMouseUp (int x, int y)
-{
-	
-}
-
-
 void State::onKeyPress(Keyboard::Key k)
 {
 	switch(k) {
 			
 		case Keyboard::Escape:
-			gw->close();
+			app->close();
 			break;
 			
 		case Keyboard::Up:
@@ -279,17 +330,6 @@ void State::onKeyPress(Keyboard::Key k)
 	}
 }
 
-
-void State::onKeyRelease(Keyboard::Key k)
-{
-	switch(k) {
-					
-		default:
-			break;
-	}
-}
-
-
 void State::update (const Time& time)
 {
 	timedMgr->fireReadyEvents(time);
@@ -300,7 +340,7 @@ void State::update (const Time& time)
 	//sprite update
 
 	// DEBUG/TESTING
-	mouseTxt.setString(tS(mx) + ", " + tS(my));
+	mouseTxt.setString(tS(mouseVec.x) + ", " + tS(mouseVec.y));
 	debugTxt.setString(vecfStr(toVecF(gridSize)));
 	
 } //end update
@@ -349,9 +389,6 @@ Maze State::generateNewMaze ()
 		forNum(4) {
 			vecI tempNext = curCell + dirCoords.at(dirStr[curIdx]);
 			if (grid[tempNext.y][tempNext.x] & 16) {
-//			auto cur = grid[tempNext.y][tempNext.x];
-//			bool unvisited = cur & 16;
-//			if (unvisited) {
 				nextCell = tempNext;
 				break;
 			}
@@ -375,7 +412,7 @@ Maze State::generateNewMaze ()
 	}
 
 	maze.grid = grid;
-	maze.cellSize = min(scrw / (gridSize.x + 2), scrh / (gridSize.y + 2));
+	maze.cellSize = min(scrw / (gridSize.x + 4), scrh / (gridSize.y + 4));
 	return maze;
 }
 
@@ -410,11 +447,46 @@ void State::assembleMazeSprite (Maze& curMaze)
 {
 	uint xsize = curMaze.cellSize * (uint)curMaze.grid[0].size();
 	uint ysize = curMaze.cellSize * (uint)curMaze.grid.size();
+	curMaze.spriteSize = toVecF(vecU(xsize, ysize));
 	curMaze.cornerOffset = {float((scrw - xsize) / 2), float((scrh - ysize) / 2)};
+	
+	rtSprVec.clear();
+	rtSprVec.shrink_to_fit();
+	rtSprVec.reserve(curMaze.grid.size());
+	rtTxVec.clear();
+	rtTxVec.shrink_to_fit();
+	rtTxVec.reserve(curMaze.grid.size());
+	
+	rt.create(xsize, ysize);
+	float factor = float(curMaze.cellSize) / (cellTxs[0].getSize().x - 1); // Keep the - 1
+	forNum (curMaze.grid.size()) {
+		rt.clear(Color::Transparent);
+		forNumJ (curMaze.grid[i].size()) {
+			auto cur = curMaze.grid[i][j];
+			Sprite spr(cellTxs[cur]);
+			spr.setOrigin({24.f, cur == 15 ? 24.f : 41.f});
+			spr.setScale({factor, factor});
+			spr.setPosition(toVecF(cellCtrToPixels({j, i})));
+			rt.draw(spr);
+		}
+		rt.display();
+		rtTxVec.emplace_back(rt.getTexture());
+		rtSprVec.emplace_back(rtTxVec.back());
+		rtSprVec.back().setColor(Color(175, 167, 128));
+	}
+}
+
+void State::assembleMazeSprite2 (Maze& curMaze)
+{
+	uint xsize = curMaze.cellSize * (uint)curMaze.grid[0].size();
+	uint ysize = curMaze.cellSize * (uint)curMaze.grid.size();
+	curMaze.spriteSize = toVecF(vecU(xsize, ysize));
+	curMaze.cornerOffset = {float((scrw - xsize) / 2), float((scrh - ysize) / 2)};
+	
 	rt.create(xsize, ysize);
 	rt.clear(Color::Transparent);
 	Sprite spr(cellTxs[0]);
-	float factor = float(curMaze.cellSize) / (spr.gLB().width - 1);
+	float factor = float(curMaze.cellSize) / (spr.gLB().width - 1); // Keep the - 1
 	spr.setScale({factor, factor});
 	centerOrigin(spr);
 	forNum (curMaze.grid.size()) {
@@ -428,10 +500,18 @@ void State::assembleMazeSprite (Maze& curMaze)
 	rt.display();
 }
 
+
 void State::movePC (Keyboard::Key k)
 {
 	char coordKey;
 	int bitNum;
+	/* The sf::Keyboard::Key codes are
+	 * Left = 71
+	 * Right = 72
+	 * Up = 73
+	 * Down = 74
+	 * therefore the following block:
+	 */
 	auto num = (int)k - 71;
 	if (num == 0) { // WEST
 		coordKey = 'w';
@@ -479,7 +559,7 @@ u_char State::getCell (const vecI& vec)
 vecI State::cellCtrToPixels (const vecI& cell)
 {
 	return {cell.x * curMaze.cellSize + curMaze.cellSize / 2,
-			cell.y * curMaze.cellSize + curMaze.cellSize / 2};
+		cell.y * curMaze.cellSize + curMaze.cellSize / 2};
 }
 
 const string State::dirStr {"neswnes"};
