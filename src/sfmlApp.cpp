@@ -43,6 +43,7 @@ void FullscreenOnlyApp::run ()
 		
 		elapsed += clock.restart();
 	}
+	cout << "Leaving app.run()\n";
 }
 
 void FullscreenOnlyApp::update ()
@@ -67,18 +68,18 @@ void FullscreenOnlyApp::update ()
 					state.onKeyRelease(event.key.code);
 					break;
 					
-				case Event::MouseMoved:
-					adj = window.mapPixelToCoords(vecI(event.mouseMove.x,
-													   event.mouseMove.y));
-					state.mouseVec = toVecI(adj);
-					break;
-					
 				case Event::MouseButtonPressed:
 					state.onMouseDown(int(adj.x), int(adj.y));
 					break;
 					
 				case Event::MouseButtonReleased:
 					state.onMouseUp(int(adj.x), int(adj.y));
+					break;
+					
+				case Event::MouseMoved:
+					adj = window.mapPixelToCoords(vecI(event.mouseMove.x,
+													   event.mouseMove.y));
+					state.mouseVec = toVecI(adj);
 					break;
 					
 				case Event::Closed:
