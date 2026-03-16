@@ -28,6 +28,7 @@ Except when noted, all the graphics in my programs are created by me, some progr
 * **jwzsfml:**  Like above, but SFML-specific
 * **resourcemanager:**  Static class for accessing resource files globally
 * **timedeventmanager:**  Manages fuses/daemons, delayed callbacks
+* **animations:**  A nascent system for generalizing animations, both frame- and transform-type
 
 ### BUILDING INSTRUCTIONS
 Ready-made program files are available on the Releases page of this repository, with versions for MacOS, Windows, and Linux. NO INSTALLATION NECESSARY: just download and double-click. If your OS isn't supported by the pre-made versions, or if you have other reasons for building from source:
