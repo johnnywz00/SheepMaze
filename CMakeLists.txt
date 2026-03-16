@@ -52,7 +52,7 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
-	zsprite resource_manager timed_event_manager jwzsfml jwzhpp
+	animations zsprite resource_manager timed_event_manager jwzsfml jwzhpp
 	sfml-audio sfml-graphics sfml-window sfml-system
 )
 
