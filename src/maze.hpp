@@ -12,6 +12,7 @@
 #include "jwzsfml.hpp"
 #include "resourcemanager.hpp"
 #include "timedeventmanager.hpp"
+#include "animations.hpp"
 
 
 using BitsetGrid = vector<vector<unsigned char>>;

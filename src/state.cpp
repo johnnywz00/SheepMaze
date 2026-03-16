@@ -40,6 +40,17 @@ void State::onCreate ()
 	pcSpr.setTexture(gTexture("pc"));
 	centerOrigin(pcSpr);
 	
+	/////// TEMP TESTING Animations
+	sheep = make_shared<AnimatableSprite>();
+	sheep->spr.setTexture(gTexture("pc"));
+	centerOrigin(sheep->spr);
+	auto an = make_shared<XlatAnimation>();
+	an->setDuration(.15);
+	an->easePattern = std::move(make_shared<SineEaseInOut>(.15, 2));
+	an->myObj = sheep;
+	an->tag = "moveSheep";
+	animMgr.animations.push_back(std::move(an));
+	
 	goalSpr.setTexture(gTexture("goal"));
 	centerOrigin(goalSpr);
 
@@ -60,7 +71,7 @@ bool State::handleTextEvent (Event& event)
 			|| event.type == Event::KeyReleased)) {
 		if (event.type == Event::TextEntered) {
 			if (event.text.unicode == 8)
-				if (iKP(LShift))
+				if (isShiftPressed())
 					activeTbox->clear();
 				else activeTbox->deleteLastChar();
 				else if (event.text.unicode == 9) ; // Don't write the \t
@@ -116,6 +127,7 @@ void State::onKeyPress(Keyboard::Key k)
 void State::update (const Time& time)
 {
 	timedMgr->fireReadyEvents(time);
+	animMgr.update(time);
 	
 	adjustVal(A, gridSize.x, 2, 2, 1000);
 	adjustVal(Z, gridSize.y, 2, 2, 1000);
@@ -132,8 +144,10 @@ void State::draw ()
 		if (curMaze.goalCell.y == i)
 			rwin->draw(goalSpr);
 		if (pcLoc.y == i
-			&& pcSpr.getScale().x < 2)
-			rwin->draw(pcSpr);
+			&& sheep->spr.getScale().x < 2)
+//			&& pcSpr.getScale().x < 2)
+			rwin->draw(sheep->spr);
+//			rwin->draw(pcSpr);
 		rwin->draw(rtSprVec[i]);
 	}
 	if (pcSpr.getScale().x > 1.9)
@@ -193,8 +207,10 @@ void State::reset ()
 	instrucsTxt.setPosition(vw.getCenter() - vw.getSize() / 2.f + vecF(15, scrh - 30));
 	
 	pcLoc = curMaze.startCell;
-	pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
-	pcSpr.setScale(factor, factor);
+	sheep->spr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
+//	pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
+	sheep->spr.setScale(factor, factor);
+//	pcSpr.setScale(factor, factor);
 }
 
 Maze State::generateNewMaze ()
@@ -560,20 +576,43 @@ void State::movePC (Keyboard::Key k)
 		bitNum = 2;
 	}
 	
+	////// TEMP TESTING ANIM: eventually allow opp.direction switch
+	///before anim completes, maybe even instantly finish an anim if
+	///key is pushed to continue the direction (or queue the movement)
+	///but make sure not to allow a turn to the north if a westward move
+	///is in progress, unless queueing it
+	auto idx = indexWhich(animMgr.animations, [](auto& x){ return x->tag == "moveSheep"; });
+	if (idx >= 0 && animMgr.animations[idx]->isPlaying())
+		return;	// for now just force wait for the movement to finish
+	/////
+	
 	/* Make PC face the direction it's heading */
-	auto curScale = pcSpr.getScale();
+	auto curScale = sheep->spr.getScale();
+//	auto curScale = pcSpr.getScale();
 	if (coordKey == 'w')
-		pcSpr.setScale(abs(curScale.x), curScale.y);
+		sheep->spr.setScale(abs(curScale.x), curScale.y);
+//		pcSpr.setScale(abs(curScale.x), curScale.y);
 	else if (coordKey == 'e')
-		pcSpr.setScale(abs(curScale.x) * -1, curScale.y);
+		sheep->spr.setScale(abs(curScale.x) * -1, curScale.y);
+//		pcSpr.setScale(abs(curScale.x) * -1, curScale.y);
 
 	/* There's no wall in the attempted direction, so
 	 * carry out a move
 	 */
 	if ( (getCell(pcLoc) & (1 << bitNum)) == 0) {
 		pcLoc += dirCoords.at(coordKey);
-		pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
-		// DO ANIMATED MOVE instead of immediate position set
+		
+		//// TESTING NEW ANIM
+		auto dest = toVecF(cellCtrToPixels(pcLoc));
+		auto ptr = dynamic_pointer_cast<XlatAnimation>(animMgr.animations[idx]);
+		if (!ptr)
+			;
+		ptr->startPt = sheep->spr.getPosition();
+		ptr->destPt = dest;
+		ptr->play(animMgr.elapsed);
+//		pcSpr.setPosition(toVecF(cellCtrToPixels(pcLoc)));
+		//////
+		
 		if (pcLoc == curMaze.goalCell)
 			winGame();
 		else

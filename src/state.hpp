@@ -1,7 +1,8 @@
 /*
  - switch between fence and wall drawing
  - sheep sprites for going n/s
- - Fuses for smooth motion
+ - make maze data dead end at goal and all cells be reachable from start:
+   currently some branches are only reachable by passing over goal
  - friction sprite motion as optional gameplay?
  - panning for larger mazes
  - color traversed cells
@@ -25,7 +26,6 @@
 
 
 class FullscreenOnlyApp;
-class TimedEventManager;
 
 class State
 {
@@ -51,6 +51,7 @@ public:
 	RenderWindow*  		 	rwin;
 	FullscreenOnlyApp* 		app;
 	TimedEventManager*      timedMgr;
+	AnimationManager		animMgr;
 	vecI					oldMouse
 							, mouseVec
 	;
@@ -117,6 +118,10 @@ private:
 	Textbox*			activeTbox = nullptr;
 	vecI 				gridSize;
 	vecI				pcLoc;
+	
+	
+	// New: Animation testing
+	shared_ptr<AnimatableSprite>	sheep;
 }; //end class State
 
 #endif
